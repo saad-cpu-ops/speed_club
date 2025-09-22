@@ -1,63 +1,105 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <time.h>
+
 #define RESET "\033[0m"
 #define CYAN "\033[36m"
 #define BOLD "\033[1m"
 #define GREEN "\033[32m"
 
+static int ask_again(void) { 
+    char line[16]; 
+    while (1) { 
+        printf("Do you want try again?(y/n): "); 
+        if(!fgets(line, sizeof line, stdin)) return 0; 
+        if(line[0] == 'y' || line[0] == 'Y') return 1; 
+        if(line[0] == 'n' || line[0] == 'N') return 0;
+        printf("Please enter (y/Y OR n/N)\n");
+    } 
+}
 
-int main(){
+int main() {
+    // Seed RNG once here
+    srand(time(NULL));
 
+    while(1) {
+        // Sentences array
+        const char *sentences[] = {
+            "The quick brown fox jumps over the lazy dog",
+            "Typing tests make your fingers smarter",
+            "Crazy zebras jumped over a wizard's fence",
+            "Linux is not just an OS, it's a mindset",
+            "Pack my box with five dozen liquor jugs",
+            "C programming is powerful and fun",
+            "I typed this line perfectly fast",
+            "Debugging is like being a detective in code",
+            "Speed typing tests your real reaction time",
+            "Never trust a computer you can't throw out a window"
+        };
 
-time_t start_time, end_time;
-double time_taken;
+        int num_sentences = sizeof(sentences) / sizeof(sentences[0]);
+        const char *sentence = sentences[rand() % num_sentences]; // Pick a random one
 
-char sentence[] = "the eqador first and last sany cloth";
+        // Intro banner
+        printf(BOLD CYAN);
+        printf("   _______.     ___           ___       _______       _______ ___   ___  _______ \n");
+        printf("    /       |    /   \\         /   \\     |       \\     |   ____|\\  \\ /  / |   ____|\n");
+        printf("   |   (----`   /  ^  \\       /  ^  \\    |  .--.  |    |  |__    \\  V  /  |  |__   \n");
+        printf("    \\   \\      /  /_\\  \\     /  /_\\  \\   |  |  |  |    |   __|    >   <   |   __|  \n");
+        printf(".----)   |    /  _____  \\   /  _____  \\  |  '--'  | __ |  |____  /  .  \\  |  |____ \n");
+        printf("|_______/    /__/     \\__\\ /__/     \\__\\ |_______/ (__)|_______|/__/ \\__\\ |_______|\n");
+        printf(RESET);
 
-    printf(BOLD CYAN);
-    printf("  ____              _   \n");
-    printf(" / ___|  __ _ _ __ | | _____ \n");
-    printf("| |  _  / _` | '_ \\| |/ / __|\n");
-    printf("| |_| | (_| | | | |   <\\__ \\\n");
-    printf(" \\____|\\__,_|_| |_|_|\\_\\___/\n");
-    printf(RESET);
+        printf(GREEN "Welcome to Saad's Speed Typing Club!\n" RESET);
+        printf("Repeat the sentence as fast and accurately as possible.\n\n");
 
-    printf(GREEN "Welcome to Saad.exe CLI Tool!\n\n" RESET);
+        // Display sentence
+        printf("Typing challenge:\n");
+        printf(BOLD CYAN "\"%s\"\n\n" RESET, sentence);
 
+        // User input
+        char user_input[300];
+        time_t start_time = time(NULL);
 
-printf("Please Repeat the words fast as possible\n");
-printf("Loading....**************\n");
+        printf("Start typing: ");
+        fgets(user_input, sizeof(user_input), stdin);
+        time_t end_time = time(NULL);
 
+        // Remove newline
+        user_input[strcspn(user_input, "\n")] = '\0';
 
+        // Time taken
+        double time_taken = difftime(end_time, start_time);
+        if (time_taken <= 0) time_taken = 1; // avoid div by zero
 
-	printf("**%s**\n", sentence);
+        // Accuracy
+        int correct_chars = 0;
+        int sentence_length = strlen(sentence);
+        int input_length = strlen(user_input);
 
-	char user_input[100];
-	start_time = time(NULL);
-	fgets(user_input, sizeof(user_input), stdin);
-	end_time = time(NULL);
-	user_input[strcspn(user_input, "\n")] = 0;
-	printf("You typed:(--%s--)\n", user_input);
+        for (int i = 0; i < sentence_length && i < input_length; i++) {
+            if (sentence[i] == user_input[i]) {
+                correct_chars++;
+            }
+        }
 
-	time_taken = difftime(end_time, start_time);
-	printf("You took --%.f-- seconds to type the sentence.\n", time_taken);
+        double accuracy = ((double)correct_chars / sentence_length) * 100;
 
-	int correct_chars = 0;
-	int length = strlen(sentence);
-	int input_length = strlen(user_input);
+        // WPM
+        double words = sentence_length / 5.0;
+        double wpm = (words / time_taken) * 60.0;
 
-	for(int i = 0; i < length && i < input_length; i++) {
-    	if(sentence[i] == user_input[i]) {
-        correct_chars++;
-    	}
-	}
+        // Report
+        printf("\n--- Typing Report ---\n");
+        printf("You typed     : \"%s\"\n", user_input);
+        printf("Time Taken    : %.2f seconds\n", time_taken);
+        printf("Accuracy      : %.2f%%\n", accuracy);
+        printf("Typing Speed  : %.2f WPM\n", wpm);
+        printf("----------------------\n");
 
-	// Accuracy percentage:
-	double accuracy = ((double)correct_chars / length) * 100;
-	printf("Accuracy: %.2f%%\n", accuracy);
-	
-return 0;
+        if(!ask_again()) break;
+    }
+
+    return 0;
 }
